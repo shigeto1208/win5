@@ -1,0 +1,371 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>WIN5 分析＆買い目構築シート (移動ボタン右側配置版)</title>
+    <style>
+        body { font-family: sans-serif; background: #eceff1; padding: 10px; margin: 0; padding-bottom: 90px; }
+        .container { max-width: 1100px; margin: auto; background: white; padding: 15px; border-radius: 12px; box-shadow: 0 4px 10px rgba(0,0,0,0.1); }
+        
+        .header-container { display: flex; justify-content: space-between; align-items: center; border-bottom: 3px solid #1a73e8; padding-bottom: 10px; margin-bottom: 20px; flex-wrap: wrap; gap: 10px; }
+        h2 { color: #1a73e8; font-size: 1.3em; margin: 0; }
+        .header-buttons { display: flex; gap: 5px; flex-wrap: wrap; }
+        
+        .race-section { border: 2px solid #cfd8dc; border-radius: 8px; margin-bottom: 25px; overflow: hidden; }
+        .race-header { background: #e3f2fd; padding: 10px 15px; display: flex; justify-content: space-between; align-items: center; border-bottom: 2px solid #cfd8dc; flex-wrap: wrap; gap: 10px; }
+        .race-title { font-weight: bold; color: #1565c0; font-size: 1.1em; }
+        
+        .bulk-area { display: none; background: #fff8e1; padding: 15px; border-bottom: 2px solid #cfd8dc; }
+        .bulk-textarea { width: 100%; height: 100px; box-sizing: border-box; padding: 10px; margin-bottom: 10px; border: 1px solid #b0bec5; border-radius: 4px; font-size: 0.9em; }
+        
+        .table-wrapper { overflow-x: auto; }
+        table { width: 100%; border-collapse: collapse; table-layout: fixed; min-width: 950px; }
+        th, td { border: 1px solid #ddd; padding: 6px 2px; text-align: center; font-size: 0.8em; }
+        th { background: #f5f5f5; color: #333; height: 35px; }
+        
+        /* 列幅の調整 */
+        .col-num { width: 35px; font-weight: bold; background: #fafafa; }
+        .col-buy { width: 45px; background: #fff3e0; } 
+        .col-neg { width: 45px; background: #f5f5f5; } 
+        .col-name { width: 110px; }
+        .col-score { width: 35px; background: #fffcf0; font-weight: bold; font-size: 1.1em; color: #d32f2f; }
+        .col-memo { width: 150px; }
+        .col-move { width: 70px; background: #fdfdfd; } /* 移動ボタン列を右端に */
+        
+        .input-text { width: 95%; padding: 5px; border: 1px solid #b0bec5; border-radius: 4px; font-size: 0.9em; box-sizing: border-box; }
+        
+        input[type="checkbox"] { transform: scale(1.3); cursor: pointer; margin: 0; }
+        .cb-buy { transform: scale(1.6) !important; outline: 2px solid #ff9800; } 
+        .cb-neg { transform: scale(1.4) !important; }
+
+        .summary-list-box { margin-top: 30px; border: 2px solid #2c3e50; border-radius: 8px; overflow: hidden; }
+        .summary-list-header { background: #2c3e50; color: white; padding: 10px; font-weight: bold; text-align: center; }
+        .summary-list-table { width: 100%; border-collapse: collapse; }
+        .summary-list-table th { background: #f8f9fa; width: 60px; border: 1px solid #ddd; padding: 10px; }
+        .summary-list-table td { border: 1px solid #ddd; padding: 10px; text-align: left; background: #fff; line-height: 2.2; }
+        
+        .num-badge { display: inline-block; background: #fff; border: 2px solid #ff9800; color: #263238; width: 28px; height: 28px; line-height: 24px; text-align: center; border-radius: 50%; margin: 3px; font-weight: bold; font-size: 1em; box-shadow: 0 1px 3px rgba(0,0,0,0.1); }
+        .empty-text { color: #9e9e9e; font-size: 0.9em; }
+
+        .bottom-bar { position: fixed; bottom: 0; left: 0; width: 100%; background: #37474f; color: white; padding: 12px 20px; box-sizing: border-box; display: flex; justify-content: space-between; align-items: center; box-shadow: 0 -2px 10px rgba(0,0,0,0.3); z-index: 100; }
+        .bottom-content { max-width: 1100px; margin: auto; display: flex; justify-content: space-between; align-items: center; width: 100%; }
+        .total-count { font-size: 1.5em; font-weight: bold; color: #ffeb3b; }
+
+        .highlight { background: #fffde7 !important; }
+        .perfect { background: #ffebee !important; }
+        .buy-row { background: #fff3e0 !important; border-left: 6px solid #ff9800; } 
+        .neg-row { background: #f0f0f0 !important; opacity: 0.5; filter: grayscale(1); }
+
+        .btn { padding: 6px 12px; border: none; border-radius: 4px; cursor: pointer; font-size: 0.85em; font-weight: bold; transition: 0.2s; }
+        .btn-update { background: #1976d2; color: white; }
+        .btn-bulk { background: #ff9800; color: white; margin-right: 10px; }
+        .btn-clear { background: #d32f2f; color: white; }
+        .btn-save { background: #00897b; color: white; }
+        .btn-load { background: #5e35b1; color: white; }
+        
+        .btn-move { padding: 2px 6px; font-size: 1.1em; background: #eee; border: 1px solid #ccc; border-radius: 3px; margin: 0 1px; color: #333; }
+        .btn-move:hover { background: #ddd; }
+    </style>
+</head>
+<body>
+
+<div class="container">
+    <div class="header-container">
+        <h2>WIN5 分析＆買い目構築シート</h2>
+        <div class="header-buttons">
+            <button class="btn btn-save" onclick="exportData()">💾 保存</button>
+            <button class="btn btn-load" onclick="document.getElementById('import-file').click()">📂 読込</button>
+            <input type="file" id="import-file" style="display:none" accept=".json" onchange="importData(event)">
+            <button class="btn btn-clear" onclick="clearAll()">🗑 クリア</button>
+        </div>
+    </div>
+
+    <div id="race-container"></div>
+
+    <div class="summary-list-box">
+        <div class="summary-list-header">【最終決定】購入馬番リスト</div>
+        <table class="summary-list-table">
+            <tbody id="summary-rows"></tbody>
+        </table>
+    </div>
+</div>
+
+<div class="bottom-bar">
+    <div class="bottom-content">
+        <div style="font-size: 0.9em; color: #b0bec5;">
+            構成： <span id="counts-display">0 × 0 × 0 × 0 × 0</span>
+        </div>
+        <div style="text-align: right;">
+            合計 <span id="total-combinations" class="total-count">0</span> 点
+            <span style="font-size: 0.8em; color: #b0bec5;">（<span id="total-price">0</span>円）</span>
+        </div>
+    </div>
+</div>
+
+<script>
+    const raceNames = ["1レース目", "2レース目", "3レース目", "4レース目", "5レース目"];
+    const labels = ["前走勝利", "逃げ先行", "重賞実績", "指数上位", "コース適性", "好調教", "末脚上位"];
+    const STORAGE_KEY = 'win5State_v16'; // バージョン更新
+
+    function loadState() {
+        const saved = localStorage.getItem(STORAGE_KEY); 
+        return saved ? JSON.parse(saved) : null;
+    }
+
+    function saveState() {
+        let state = { horseCounts: [], checkboxes: {}, buys: {}, negs: {}, names: {}, memos: {} };
+        for (let rIdx = 0; rIdx < 5; rIdx++) {
+            let countEl = document.getElementById(`h-count-${rIdx}`);
+            let count = countEl ? parseInt(countEl.value) : 16;
+            state.horseCounts.push(count);
+            for (let hIdx = 1; hIdx <= count; hIdx++) {
+                let cbs = document.querySelectorAll(`.cb-analysis-${rIdx}-${hIdx}`);
+                cbs.forEach((cb, idx) => { if(cb.checked) state.checkboxes[`${rIdx}-${hIdx}-${idx}`] = true; });
+                if(document.getElementById(`buy-${rIdx}-${hIdx}`).checked) state.buys[`${rIdx}-${hIdx}`] = true;
+                if(document.getElementById(`neg-${rIdx}-${hIdx}`).checked) state.negs[`${rIdx}-${hIdx}`] = true;
+                let nameVal = document.getElementById(`name-${rIdx}-${hIdx}`).value;
+                if(nameVal) state.names[`${rIdx}-${hIdx}`] = nameVal;
+                let memoVal = document.getElementById(`memo-${rIdx}-${hIdx}`).value;
+                if(memoVal) state.memos[`${rIdx}-${hIdx}`] = memoVal;
+            }
+        }
+        localStorage.setItem(STORAGE_KEY, JSON.stringify(state));
+        updateTotal();
+    }
+
+    function moveRow(rIdx, hIdx, direction) {
+        let state = loadState() || { horseCounts: [16,16,16,16,16], checkboxes: {}, buys: {}, negs: {}, names: {}, memos: {} };
+        let targetIdx = hIdx + direction;
+        let maxCount = state.horseCounts[rIdx];
+        
+        if (targetIdx < 1 || targetIdx > maxCount) return;
+
+        const keys = ['names', 'memos', 'buys', 'negs'];
+        keys.forEach(key => {
+            let temp = state[key][`${rIdx}-${hIdx}`];
+            state[key][`${rIdx}-${hIdx}`] = state[key][`${rIdx}-${targetIdx}`];
+            state[key][`${rIdx}-${targetIdx}`] = temp;
+        });
+
+        for (let j = 0; j < 7; j++) {
+            let tempCb = state.checkboxes[`${rIdx}-${hIdx}-${j}`];
+            state.checkboxes[`${rIdx}-${hIdx}-${j}`] = state.checkboxes[`${rIdx}-${targetIdx}-${j}`];
+            state.checkboxes[`${rIdx}-${targetIdx}-${j}`] = tempCb;
+        }
+
+        localStorage.setItem(STORAGE_KEY, JSON.stringify(state));
+        renderRace(rIdx, true, state); 
+    }
+
+    function exportData() {
+        saveState();
+        const data = localStorage.getItem(STORAGE_KEY);
+        if (!data) return;
+        const blob = new Blob([data], {type: 'application/json'});
+        const url = URL.createObjectURL(blob);
+        const a = document.createElement('a');
+        const date = new Date();
+        a.href = url;
+        a.download = `WIN5_${date.getMonth()+1}${date.getDate()}.json`;
+        a.click();
+        URL.revokeObjectURL(url);
+    }
+
+    function importData(event) {
+        const file = event.target.files[0];
+        if (!file) return;
+        const reader = new FileReader();
+        reader.onload = function(e) {
+            localStorage.setItem(STORAGE_KEY, e.target.result);
+            init();
+            alert("読み込み完了");
+        };
+        reader.readAsText(file);
+    }
+
+    function clearAll() {
+        if(confirm("リセットしますか？")) {
+            localStorage.removeItem(STORAGE_KEY);
+            init();
+        }
+    }
+
+    function init() {
+        const container = document.getElementById('race-container');
+        const summaryRows = document.getElementById('summary-rows');
+        container.innerHTML = '';
+        summaryRows.innerHTML = '';
+        let state = loadState();
+
+        raceNames.forEach((name, rIdx) => {
+            let hCount = state ? state.horseCounts[rIdx] : 16;
+            let section = document.createElement('div');
+            section.className = 'race-section';
+            section.innerHTML = `
+                <div class="race-header">
+                    <span class="race-title">${name}</span>
+                    <div>
+                        <button class="btn btn-bulk" onclick="toggleBulk(${rIdx})">🐴 抽出</button>
+                        頭数: <input type="number" id="h-count-${rIdx}" value="${hCount}" min="1" max="18" style="width:40px; text-align:center;">
+                        <button class="btn btn-update" onclick="renderRace(${rIdx})">更新</button>
+                    </div>
+                </div>
+                <div id="bulk-area-${rIdx}" class="bulk-area">
+                    <textarea id="bulk-text-${rIdx}" class="bulk-textarea" placeholder="データを貼り付け..."></textarea>
+                    <button class="btn btn-update" style="width:100%" onclick="applyJraBulk(${rIdx})">反映</button>
+                </div>
+                <div class="table-wrapper">
+                    <table>
+                        <thead>
+                            <tr>
+                                <th class="col-num">番</th>
+                                <th class="col-buy">買</th>
+                                <th class="col-neg">消</th>
+                                <th class="col-name">馬名</th>
+                                ${labels.map(l => `<th>${l}</th>`).join('')}
+                                <th class="col-score">計</th>
+                                <th class="col-memo">一言メモ</th>
+                                <th class="col-move">移動</th>
+                            </tr>
+                        </thead>
+                        <tbody id="tbody-${rIdx}"></tbody>
+                    </table>
+                </div>
+            `;
+            container.appendChild(section);
+            summaryRows.innerHTML += `<tr><th>${rIdx+1}R</th><td id="sel-${rIdx}"><span class="empty-text">未選択</span></td></tr>`;
+            renderRace(rIdx, false, state);
+        });
+        updateTotal();
+    }
+
+    function toggleBulk(rIdx) {
+        const area = document.getElementById(`bulk-area-${rIdx}`);
+        area.style.display = area.style.display === 'none' || area.style.display === '' ? 'block' : 'none';
+    }
+
+    function applyJraBulk(rIdx) {
+        let text = document.getElementById(`bulk-text-${rIdx}`).value;
+        if (!text.trim()) return;
+        text = text.replace(/　/g, ' ').replace(/[\u200B-\u200D\uFEFF]/g, '').replace(/マルガイ|カクチ|マルチ/g, '');
+        const lines = text.split(/\r\n|\n|\r/).map(l => l.trim()).filter(l => l !== '');
+        let extractedNames = [];
+        for (let i = 0; i < lines.length; i++) {
+            let line = lines[i];
+            let dbMatch = line.match(/([ァ-ンヴー・]{2,9})のデータベース/);
+            if (dbMatch) { if (!extractedNames.includes(dbMatch[1])) extractedNames.push(dbMatch[1]); continue; }
+            if (line.includes('(栗東)') || line.includes('(美浦)') || line.includes('(地方)')) {
+                let match = line.match(/([ァ-ンヴー]{2,9})/);
+                if (match) { if (!extractedNames.includes(match[1])) extractedNames.push(match[1]); } 
+                else if (i > 0) {
+                    let prevMatch = lines[i-1].match(/([ァ-ンヴー]{2,9})/);
+                    if (prevMatch && !extractedNames.includes(prevMatch[1])) extractedNames.push(prevMatch[1]);
+                }
+            } else {
+                let fallbackMatch = line.match(/([ァ-ンヴー]{2,9})\s*(?:牡|牝|セ)\s*\d+/);
+                if (fallbackMatch && !extractedNames.includes(fallbackMatch[1])) extractedNames.push(fallbackMatch[1]);
+            }
+        }
+        if (extractedNames.length === 0) return alert("抽出失敗");
+        const currentCount = parseInt(document.getElementById(`h-count-${rIdx}`).value);
+        if (extractedNames.length > currentCount) { document.getElementById(`h-count-${rIdx}`).value = extractedNames.length; renderRace(rIdx, false); }
+        for (let i = 0; i < extractedNames.length; i++) {
+            const nameInput = document.getElementById(`name-${rIdx}-${i+1}`);
+            if (nameInput) nameInput.value = extractedNames[i];
+        }
+        saveState();
+        toggleBulk(rIdx);
+    }
+
+    function renderRace(rIdx, shouldUpdateTotal = true, state = null) {
+        if (!state) state = loadState();
+        const count = document.getElementById(`h-count-${rIdx}`).value;
+        const tbody = document.getElementById(`tbody-${rIdx}`);
+        tbody.innerHTML = '';
+        for (let i = 1; i <= count; i++) {
+            let tr = document.createElement('tr');
+            tr.id = `r${rIdx}-row-${i}`;
+            let nameVal = state?.names?.[`${rIdx}-${i}`] || '';
+            let memoVal = state?.memos?.[`${rIdx}-${i}`] || '';
+            let buyChecked = state?.buys?.[`${rIdx}-${i}`] ? 'checked' : '';
+            let negChecked = state?.negs?.[`${rIdx}-${i}`] ? 'checked' : '';
+            
+            let html = `<td class="col-num">${i}</td>`;
+            html += `<td class="col-buy"><input type="checkbox" id="buy-${rIdx}-${i}" class="cb-buy" ${buyChecked} onchange="handleBuyChange(${rIdx}, ${i})"></td>`;
+            html += `<td class="col-neg"><input type="checkbox" id="neg-${rIdx}-${i}" class="cb-neg" ${negChecked} onchange="handleNegChange(${rIdx}, ${i})"></td>`;
+            html += `<td><input type="text" class="input-text" id="name-${rIdx}-${i}" value="${nameVal}" placeholder="馬名" oninput="saveState()"></td>`;
+            for (let j = 0; j < 7; j++) {
+                let checked = state?.checkboxes?.[`${rIdx}-${i}-${j}`] ? 'checked' : '';
+                html += `<td><input type="checkbox" class="cb-analysis-${rIdx}-${i}" ${checked} onchange="handleAnalysisChange(${rIdx}, ${i})"></td>`;
+            }
+            html += `<td id="score-${rIdx}-${i}" class="col-score">0</td>`;
+            html += `<td><input type="text" class="input-text" id="memo-${rIdx}-${i}" value="${memoVal}" placeholder="メモ..." oninput="saveState()"></td>`;
+            // 移動ボタンを右端へ
+            html += `<td class="col-move">
+                <button class="btn-move" onclick="moveRow(${rIdx}, ${i}, -1)">▲</button>
+                <button class="btn-move" onclick="moveRow(${rIdx}, ${i}, 1)">▼</button>
+            </td>`;
+            
+            tr.innerHTML = html;
+            tbody.appendChild(tr);
+            updateRowStyle(rIdx, i);
+        }
+        if (shouldUpdateTotal) saveState();
+    }
+
+    function handleBuyChange(rIdx, hIdx) {
+        if (document.getElementById(`buy-${rIdx}-${hIdx}`).checked) document.getElementById(`neg-${rIdx}-${hIdx}`).checked = false;
+        updateRowStyle(rIdx, hIdx);
+        saveState();
+    }
+
+    function handleNegChange(rIdx, hIdx) {
+        if (document.getElementById(`neg-${rIdx}-${hIdx}`).checked) document.getElementById(`buy-${rIdx}-${hIdx}`).checked = false;
+        updateRowStyle(rIdx, hIdx);
+        saveState();
+    }
+
+    function handleAnalysisChange(rIdx, hIdx) { updateRowStyle(rIdx, hIdx); saveState(); }
+
+    function updateRowStyle(rIdx, hIdx) {
+        const cbs = document.querySelectorAll(`.cb-analysis-${rIdx}-${hIdx}`);
+        let score = 0;
+        cbs.forEach(cb => { if(cb.checked) score++; });
+        document.getElementById(`score-${rIdx}-${hIdx}`).innerText = score;
+        const row = document.getElementById(`r${rIdx}-row-${hIdx}`);
+        row.classList.remove('highlight', 'perfect', 'buy-row', 'neg-row');
+        if (document.getElementById(`neg-${rIdx}-${hIdx}`).checked) row.classList.add('neg-row');
+        else if (document.getElementById(`buy-${rIdx}-${hIdx}`).checked) row.classList.add('buy-row');
+        else {
+            if (score >= 6) row.classList.add('perfect');
+            else if (score >= 4) row.classList.add('highlight');
+        }
+    }
+
+    function updateTotal() {
+        let counts = [0, 0, 0, 0, 0];
+        raceNames.forEach((_, rIdx) => {
+            const tbody = document.getElementById(`tbody-${rIdx}`);
+            let selectedNums = [];
+            if (!tbody) return;
+            const rows = tbody.querySelectorAll('tr');
+            rows.forEach((row, idx) => {
+                const hNum = idx + 1;
+                if (document.getElementById(`buy-${rIdx}-${hNum}`).checked) {
+                    counts[rIdx]++;
+                    selectedNums.push(hNum);
+                }
+            });
+            document.getElementById(`sel-${rIdx}`).innerHTML = selectedNums.length ? selectedNums.map(n => `<span class="num-badge">${n}</span>`).join('') : '<span class="empty-text">未選択</span>';
+        });
+        document.getElementById('counts-display').innerText = counts.join(' × ');
+        const total = counts.includes(0) ? 0 : counts.reduce((a, b) => a * b, 1);
+        document.getElementById('total-combinations').innerText = total.toLocaleString();
+        document.getElementById('total-price').innerText = (total * 100).toLocaleString();
+    }
+
+    init();
+</script>
+</body>
+</html>
