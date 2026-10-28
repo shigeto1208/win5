@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>WIN5 分析＆買い目構築シート (移動ボタン右側配置版)</title>
+    <title>WIN5 分析＆買い目構築シート (6項目版)</title>
     <style>
         body { font-family: sans-serif; background: #eceff1; padding: 10px; margin: 0; padding-bottom: 90px; }
         .container { max-width: 1100px; margin: auto; background: white; padding: 15px; border-radius: 12px; box-shadow: 0 4px 10px rgba(0,0,0,0.1); }
@@ -31,7 +31,7 @@
         .col-name { width: 110px; }
         .col-score { width: 35px; background: #fffcf0; font-weight: bold; font-size: 1.1em; color: #d32f2f; }
         .col-memo { width: 150px; }
-        .col-move { width: 70px; background: #fdfdfd; } /* 移動ボタン列を右端に */
+        .col-move { width: 70px; background: #fdfdfd; }
         
         .input-text { width: 95%; padding: 5px; border: 1px solid #b0bec5; border-radius: 4px; font-size: 0.9em; box-sizing: border-box; }
         
@@ -105,8 +105,9 @@
 
 <script>
     const raceNames = ["1レース目", "2レース目", "3レース目", "4レース目", "5レース目"];
-    const labels = ["前走勝利", "逃げ先行", "重賞実績", "指数上位", "コース適性", "好調教", "末脚上位"];
-    const STORAGE_KEY = 'win5State_v16'; // バージョン更新
+    // 項目をご指定の6項目に変更
+    const labels = ["近走勝ち", "逃げ馬", "重賞実績", "指数上位", "コース適性", "好調教"];
+    const STORAGE_KEY = 'win5State_v17'; // バージョン更新
 
     function loadState() {
         const saved = localStorage.getItem(STORAGE_KEY); 
@@ -148,7 +149,7 @@
             state[key][`${rIdx}-${targetIdx}`] = temp;
         });
 
-        for (let j = 0; j < 7; j++) {
+        for (let j = 0; j < labels.length; j++) {
             let tempCb = state.checkboxes[`${rIdx}-${hIdx}-${j}`];
             state.checkboxes[`${rIdx}-${hIdx}-${j}`] = state.checkboxes[`${rIdx}-${targetIdx}-${j}`];
             state.checkboxes[`${rIdx}-${targetIdx}-${j}`] = tempCb;
@@ -295,13 +296,12 @@
             html += `<td class="col-buy"><input type="checkbox" id="buy-${rIdx}-${i}" class="cb-buy" ${buyChecked} onchange="handleBuyChange(${rIdx}, ${i})"></td>`;
             html += `<td class="col-neg"><input type="checkbox" id="neg-${rIdx}-${i}" class="cb-neg" ${negChecked} onchange="handleNegChange(${rIdx}, ${i})"></td>`;
             html += `<td><input type="text" class="input-text" id="name-${rIdx}-${i}" value="${nameVal}" placeholder="馬名" oninput="saveState()"></td>`;
-            for (let j = 0; j < 7; j++) {
+            for (let j = 0; j < labels.length; j++) {
                 let checked = state?.checkboxes?.[`${rIdx}-${i}-${j}`] ? 'checked' : '';
                 html += `<td><input type="checkbox" class="cb-analysis-${rIdx}-${i}" ${checked} onchange="handleAnalysisChange(${rIdx}, ${i})"></td>`;
             }
             html += `<td id="score-${rIdx}-${i}" class="col-score">0</td>`;
             html += `<td><input type="text" class="input-text" id="memo-${rIdx}-${i}" value="${memoVal}" placeholder="メモ..." oninput="saveState()"></td>`;
-            // 移動ボタンを右端へ
             html += `<td class="col-move">
                 <button class="btn-move" onclick="moveRow(${rIdx}, ${i}, -1)">▲</button>
                 <button class="btn-move" onclick="moveRow(${rIdx}, ${i}, 1)">▼</button>
@@ -338,8 +338,9 @@
         if (document.getElementById(`neg-${rIdx}-${hIdx}`).checked) row.classList.add('neg-row');
         else if (document.getElementById(`buy-${rIdx}-${hIdx}`).checked) row.classList.add('buy-row');
         else {
-            if (score >= 6) row.classList.add('perfect');
-            else if (score >= 4) row.classList.add('highlight');
+            // 6項目中の基準に自動調整 (5点以上で赤、3点以上で黄色)
+            if (score >= 5) row.classList.add('perfect');
+            else if (score >= 3) row.classList.add('highlight');
         }
     }
 
