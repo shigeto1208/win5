@@ -3,10 +3,10 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>WIN5 分析＆買い目構築シート (7項目最適化版)</title>
+    <title>WIN5 分析＆買い目構築シート (9項目最適化版)</title>
     <style>
         body { font-family: sans-serif; background: #eceff1; padding: 10px; margin: 0; padding-bottom: 90px; }
-        .container { max-width: 1120px; margin: auto; background: white; padding: 15px; border-radius: 12px; box-shadow: 0 4px 10px rgba(0,0,0,0.1); }
+        .container { max-width: 1180px; margin: auto; background: white; padding: 15px; border-radius: 12px; box-shadow: 0 4px 10px rgba(0,0,0,0.1); }
         
         .header-container { display: flex; justify-content: space-between; align-items: center; border-bottom: 3px solid #1a73e8; padding-bottom: 10px; margin-bottom: 20px; flex-wrap: wrap; gap: 10px; }
         h2 { color: #1a73e8; font-size: 1.3em; margin: 0; }
@@ -20,7 +20,7 @@
         .bulk-textarea { width: 100%; height: 100px; box-sizing: border-box; padding: 10px; margin-bottom: 10px; border: 1px solid #b0bec5; border-radius: 4px; font-size: 0.9em; }
         
         .table-wrapper { overflow-x: auto; }
-        table { width: 100%; border-collapse: collapse; table-layout: fixed; min-width: 980px; }
+        table { width: 100%; border-collapse: collapse; table-layout: fixed; min-width: 1080px; }
         th, td { border: 1px solid #ddd; padding: 6px 2px; text-align: center; font-size: 0.8em; }
         th { background: #f5f5f5; color: #333; height: 35px; }
         
@@ -49,7 +49,7 @@
         .empty-text { color: #9e9e9e; font-size: 0.9em; }
 
         .bottom-bar { position: fixed; bottom: 0; left: 0; width: 100%; background: #37474f; color: white; padding: 12px 20px; box-sizing: border-box; display: flex; justify-content: space-between; align-items: center; box-shadow: 0 -2px 10px rgba(0,0,0,0.3); z-index: 100; }
-        .bottom-content { max-width: 1120px; margin: auto; display: flex; justify-content: space-between; align-items: center; width: 100%; }
+        .bottom-content { max-width: 1180px; margin: auto; display: flex; justify-content: space-between; align-items: center; width: 100%; }
         .total-count { font-size: 1.5em; font-weight: bold; color: #ffeb3b; }
 
         .highlight { background: #fffde7 !important; }
@@ -105,9 +105,9 @@
 
 <script>
     const raceNames = ["1レース目", "2レース目", "3レース目", "4レース目", "5レース目"];
-    // 好調教とコース適性を入れ替え、新しく「勝ち癖」を追加した7項目
-    const labels = ["前走勝ち", "逃げ馬", "重賞実績", "指数上位", "好調教", "適性", "勝ち癖"];
-    const STORAGE_KEY = 'win5State_v18'; // バージョン更新
+    // 指数2、指数3を追加した全9項目
+    const labels = ["指数1", "指数2", "指数3","逃げ馬","前走勝ち", "重賞実績", "好調教", "コース適性", "勝ち癖"];
+    const STORAGE_KEY = 'win5State_v19'; // バージョン更新
 
     function loadState() {
         const saved = localStorage.getItem(STORAGE_KEY); 
@@ -338,9 +338,9 @@
         if (document.getElementById(`neg-${rIdx}-${hIdx}`).checked) row.classList.add('neg-row');
         else if (document.getElementById(`buy-${rIdx}-${hIdx}`).checked) row.classList.add('buy-row');
         else {
-            // 7項目中の基準に再調整 (6点以上で赤、4点以上で黄色)
-            if (score >= 6) row.classList.add('perfect');
-            else if (score >= 4) row.classList.add('highlight');
+            // 9項目中の基準に再調整 (7点以上で赤、5点以上で黄色)
+            if (score >= 7) row.classList.add('perfect');
+            else if (score >= 5) row.classList.add('highlight');
         }
     }
 
